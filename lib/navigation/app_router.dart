@@ -6,6 +6,7 @@ import '../screens/splash/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/home/main_tab_shell.dart';
 import '../screens/wallets/wallets_screen.dart';
@@ -74,7 +75,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authState.isAuthenticated;
       final isSplash = state.matchedLocation == '/splash';
       final isOnboarding = state.matchedLocation == '/onboarding';
-      final isAuth = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final isAuth = state.matchedLocation == '/login' || state.matchedLocation == '/register' || state.matchedLocation == '/forgot-password';
       final isAdmin = state.matchedLocation.startsWith('/admin');
 
       if (isSplash || isOnboarding) return null;
@@ -108,6 +109,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const RegisterScreen(),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (_, __) => const ForgotPasswordScreen(),
       ),
       GoRoute(
         path: '/register',

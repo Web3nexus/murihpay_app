@@ -31,14 +31,16 @@ class ApiService {
 
   Future<Wallet> getWallet(String uuid) async {
     final response = await _api.get('/wallets/$uuid');
-    return Wallet.fromJson(response.data['data']);
+    final data = response.data['data'];
+    return Wallet.fromJson(data['wallet'] ?? data);
   }
 
   Future<List<Transaction>> getTransactions({String? walletId}) async {
     final response = await _api.get('/transactions', queryParameters: {
       if (walletId != null) 'wallet_id': walletId,
     });
-    final list = response.data['data'] as List? ?? [];
+    final data = response.data['data'];
+    final list = data is List ? data : (data['transactions'] as List? ?? []);
     return list.map((e) => Transaction.fromJson(e)).toList();
   }
 
@@ -49,7 +51,7 @@ class ApiService {
     String? description,
   }) async {
     final response = await _api.post('/transactions/transfer', data: {
-      'recipient': recipient,
+      'recipient_account': recipient,
       'amount': amount,
       'currency': currency,
       if (description != null) 'description': description,
@@ -58,24 +60,26 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> fundWallet({
+    required int walletId,
     required double amount,
-    required String currency,
+    String paymentMethod = 'card',
   }) async {
     final response = await _api.post('/transactions/fund', data: {
+      'wallet_id': walletId,
       'amount': amount,
-      'currency': currency,
+      'payment_method': paymentMethod,
     });
     return response.data;
   }
 
   Future<Map<String, dynamic>> convertCurrency({
-    required String from,
-    required String to,
+    required int sourceWalletId,
+    required int destWalletId,
     required double amount,
   }) async {
     final response = await _api.post('/transactions/exchange', data: {
-      'from': from,
-      'to': to,
+      'source_wallet_id': sourceWalletId,
+      'dest_wallet_id': destWalletId,
       'amount': amount,
     });
     return response.data;
@@ -83,7 +87,8 @@ class ApiService {
 
   Future<List<CardModel>> getCards() async {
     final response = await _api.get('/cards');
-    final list = response.data['data'] as List? ?? [];
+    final data = response.data['data'];
+    final list = data is List ? data : (data['cards'] as List? ?? []);
     return list.map((e) => CardModel.fromJson(e)).toList();
   }
 
@@ -98,8 +103,19 @@ class ApiService {
 
   Future<List<ExchangeRate>> getRates() async {
     final response = await _api.get('/rates');
-    final list = response.data['data'] as List? ?? [];
-    return list.map((e) => ExchangeRate.fromJson(e)).toList();
+    final data = response.data['data'];
+    final rates = data is List ? data : (data['rates'] as Map<String, dynamic>? ?? {});
+    if (rates is Map<String, dynamic>) {
+      return rates.entries.map((e) {
+        final parts = e.key.split('_');
+        return ExchangeRate(
+          from: parts.isNotEmpty ? parts[0] : '',
+          to: parts.length > 1 ? parts[1] : '',
+          rate: (e.value is num) ? (e.value as num).toDouble() : 0.0,
+        );
+      }).toList();
+    }
+    return rates.map((e) => ExchangeRate.fromJson(e)).toList();
   }
 
   Future<ExchangeRate> getRate(String from, String to) async {
@@ -109,7 +125,8 @@ class ApiService {
 
   Future<List<Investment>> getInvestments() async {
     final response = await _api.get('/investments');
-    final list = response.data['data'] as List? ?? [];
+    final data = response.data['data'];
+    final list = data is List ? data : (data['investments'] as List? ?? []);
     return list.map((e) => Investment.fromJson(e)).toList();
   }
 
@@ -128,19 +145,23 @@ class ApiService {
   }
 
   Future<KycSubmission> submitKyc({
-    required String documentType,
-    String? frontImagePath,
-    String? backImagePath,
+    required String bvn,
+    String? nin,
+    String? idType,
     String? selfiePath,
+    String? idDocumentPath,
+    String? addressProofPath,
   }) async {
     final formData = FormData.fromMap({
-      'document_type': documentType,
-      if (frontImagePath != null)
-        'front_image': await MultipartFile.fromFile(frontImagePath),
-      if (backImagePath != null)
-        'back_image': await MultipartFile.fromFile(backImagePath),
+      'bvn': bvn,
+      if (nin != null) 'nin': nin,
+      if (idType != null) 'id_type': idType,
       if (selfiePath != null)
         'selfie_image': await MultipartFile.fromFile(selfiePath),
+      if (idDocumentPath != null)
+        'id_document': await MultipartFile.fromFile(idDocumentPath),
+      if (addressProofPath != null)
+        'address_proof': await MultipartFile.fromFile(addressProofPath),
     });
     final response = await _api.post('/kyc/submit', data: formData);
     return KycSubmission.fromJson(response.data['data']);
@@ -148,11 +169,6 @@ class ApiService {
 
   Future<Map<String, dynamic>> getKycStatus() async {
     final response = await _api.get('/kyc/status');
-    return response.data['data'] ?? response.data;
-  }
-
-  Future<Map<String, dynamic>> getDashboardData() async {
-    final response = await _api.get('/dashboard');
     return response.data['data'] ?? response.data;
   }
 

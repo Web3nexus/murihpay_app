@@ -10,6 +10,9 @@ class AuthService {
   AuthService(this._api, {FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
 
+  /// Stores the temp_token when 2FA is required after login.
+  String? _tempToken;
+
   Future<User> login(String email, String password) async {
     final response = await _api.post('/auth/login', data: {
       'email': email,
@@ -17,8 +20,14 @@ class AuthService {
     });
 
     final data = response.data['data'];
+    if (data['requires_2fa'] == true) {
+      _tempToken = data['temp_token']?.toString();
+      throw Exception('requires_2fa');
+    }
+
     final token = data['access_token']?.toString() ?? data['token']?.toString() ?? '';
     await _storage.write(key: 'access_token', value: token);
+    _tempToken = null;
 
     return User.fromJson(data['user'] ?? data);
   }
@@ -72,21 +81,39 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 
-  Future<bool> verify2FA(String code) async {
-    final response = await _api.post('/auth/verify-2fa', data: {'code': code});
+  Future<bool> verify2FA(String otp) async {
+    if (_tempToken == null) return false;
+    final response = await _api.post('/auth/verify-2fa', data: {
+      'temp_token': _tempToken,
+      'otp': otp,
+    });
+
+    final data = response.data['data'];
+    final token = data['access_token']?.toString() ?? data['token']?.toString() ?? '';
+    await _storage.write(key: 'access_token', value: token);
+    _tempToken = null;
+
     return response.data['success'] == true;
   }
 
-  Future<void> setup2FA() async {
-    await _api.post('/auth/2fa/setup');
+  Future<Map<String, dynamic>> setup2FA(String password) async {
+    final response = await _api.post('/auth/2fa/setup', data: {
+      'password': password,
+    });
+    return response.data['data'] ?? response.data;
   }
 
-  Future<void> enable2FA() async {
-    await _api.post('/auth/2fa/enable');
+  Future<void> enable2FA(String secret, String otp) async {
+    await _api.post('/auth/2fa/enable', data: {
+      'secret': secret,
+      'otp': otp,
+    });
   }
 
-  Future<void> disable2FA() async {
-    await _api.post('/auth/2fa/disable');
+  Future<void> disable2FA(String password) async {
+    await _api.post('/auth/2fa/disable', data: {
+      'password': password,
+    });
   }
 
   Future<bool> twoFactorStatus() async {

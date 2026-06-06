@@ -107,7 +107,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () => context.go('/forgot-password'),
                     child: Text(
                       'Forgot Password?',
                       style: AppTypography.bodySemibold.copyWith(

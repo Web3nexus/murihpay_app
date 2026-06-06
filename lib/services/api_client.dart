@@ -3,19 +3,18 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:io' show Platform;
+import '../config.dart';
 
 class ApiClient {
   static const String _baseUrlKey = 'api_base_url';
 
-  static const String _localApi = 'http://localhost:8000/api/v1';
-  static const String _liveApi = 'https://murihpay.com/api/v1';
-
   static String get _defaultBaseUrl {
-    if (kIsWeb) return _localApi;
+    if (AppConfig.isProduction) return 'https://murihpay.com/api/v1';
+    if (kIsWeb) return AppConfig.apiBaseUrl;
     try {
-      if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1';
+      if (Platform.isAndroid) return AppConfig.apiBaseUrl.replaceFirst('localhost', '10.0.2.2');
     } catch (_) {}
-    return _localApi;
+    return AppConfig.apiBaseUrl;
   }
 
   late final Dio _dio;

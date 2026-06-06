@@ -7,14 +7,17 @@ class BillsScreen extends StatelessWidget {
   const BillsScreen({super.key});
 
   static const _categories = [
-    _BillCategory(Icons.bolt_rounded, 'Electricity', AppColors.warningAmber),
-    _BillCategory(Icons.wifi_rounded, 'Internet', AppColors.infoBlue),
-    _BillCategory(Icons.live_tv_rounded, 'TV/Cable', AppColors.withdrawPurple),
-    _BillCategory(Icons.phone_android_rounded, 'Mobile', AppColors.successGreen),
-    _BillCategory(Icons.water_drop_rounded, 'Water', AppColors.infoBlue),
-    _BillCategory(Icons.shield_rounded, 'Insurance', AppColors.errorRed),
-    _BillCategory(Icons.school_rounded, 'Education', AppColors.primaryGold),
-    _BillCategory(Icons.miscellaneous_services_rounded, 'Other', AppColors.charcoalGray),
+    _BillCategory(Icons.bolt_rounded, 'Electricity', AppColors.warningAmber, '/electricity'),
+    _BillCategory(Icons.wifi_rounded, 'Internet', AppColors.infoBlue, '/internet'),
+    _BillCategory(Icons.phone_android_rounded, 'Mobile', AppColors.successGreen, '/airtime'),
+  ];
+
+  static const _comingSoon = [
+    _BillCategory(Icons.live_tv_rounded, 'TV/Cable', AppColors.withdrawPurple, null),
+    _BillCategory(Icons.water_drop_rounded, 'Water', AppColors.infoBlue, null),
+    _BillCategory(Icons.shield_rounded, 'Insurance', AppColors.errorRed, null),
+    _BillCategory(Icons.school_rounded, 'Education', AppColors.primaryGold, null),
+    _BillCategory(Icons.miscellaneous_services_rounded, 'Other', AppColors.charcoalGray, null),
   ];
 
   @override
@@ -64,56 +67,92 @@ class BillsScreen extends StatelessWidget {
             Text('Select a category', style: AppTypography.h4),
             const SizedBox(height: 12),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.85,
-                ),
-                itemCount: _categories.length,
-                itemBuilder: (_, i) {
-                  final cat = _categories[i];
-                  return GestureDetector(
-                    onTap: () {
-                      final route = switch (cat.label) {
-                        'Electricity' => '/electricity',
-                        'Internet' => '/internet',
-                        'Mobile' => '/airtime',
-                        _ => null,
-                      };
-                      if (route != null) {
-                        context.push(route);
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${cat.label} coming soon')),
-                        );
-                      }
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 56, height: 56,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [cat.color.withAlpha(40), cat.color.withAlpha(10)],
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(cat.icon, color: cat.color, size: 26),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(cat.label,
-                          style: AppTypography.small.copyWith(fontWeight: FontWeight.w500),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+              child: ListView(
+                children: [
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.85,
                     ),
-                  );
-                },
+                    itemCount: _categories.length,
+                    itemBuilder: (_, i) {
+                      final cat = _categories[i];
+                      return GestureDetector(
+                        onTap: () => context.push(cat.route!),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 56, height: 56,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [cat.color.withAlpha(40), cat.color.withAlpha(10)],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(cat.icon, color: cat.color, size: 26),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(cat.label,
+                              style: AppTypography.small.copyWith(fontWeight: FontWeight.w500),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  if (_comingSoon.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text('More services coming soon', style: AppTypography.bodySmall.copyWith(color: AppColors.charcoalGray)),
+                    const SizedBox(height: 8),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 0.85,
+                      ),
+                      itemCount: _comingSoon.length,
+                      itemBuilder: (_, i) {
+                        final cat = _comingSoon[i];
+                        return Opacity(
+                          opacity: 0.4,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 56, height: 56,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [cat.color.withAlpha(40), cat.color.withAlpha(10)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Icon(cat.icon, color: cat.color, size: 26),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(cat.label,
+                                style: AppTypography.small.copyWith(fontWeight: FontWeight.w500),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -127,5 +166,6 @@ class _BillCategory {
   final IconData icon;
   final String label;
   final Color color;
-  const _BillCategory(this.icon, this.label, this.color);
+  final String? route;
+  const _BillCategory(this.icon, this.label, this.color, [this.route]);
 }
