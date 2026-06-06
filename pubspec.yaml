@@ -1,0 +1,59 @@
+name: murihpay
+description: "Murihpay — Multi-currency fintech mobile app"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  dio: ^5.7.0
+  flutter_secure_storage: ^9.2.4
+  go_router: ^14.8.1
+  google_fonts: ^6.2.1
+  fl_chart: ^0.70.2
+  intl: ^0.20.2
+  cached_network_image: ^3.4.1
+  local_auth: ^2.3.0
+  image_picker: ^1.1.2
+  flutter_svg: ^2.0.17
+  shimmer: ^3.0.0
+  pin_code_fields: ^8.0.1
+  percent_indicator: ^4.2.4
+  loading_animation_widget: ^1.3.0
+  dotted_border: ^2.1.0
+  fluttertoast: ^8.2.10
+  share_plus: ^10.1.4
+  url_launcher: ^6.3.1
+  qr_flutter: ^4.1.0
+  crypto: ^3.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.14
+  riverpod_generator: ^2.6.3
+  json_serializable: ^6.9.4
+  mockito: ^5.4.6
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/lunchicon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
